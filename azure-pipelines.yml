@@ -2,6 +2,58 @@
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
+import pandas as pd
+
+# Step 1: Input Employee Data
+def load_employee_data(file_path):
+    return pd.read_csv(file_path)
+
+# Step 2: Validate Data
+def validate_data(df):
+    required_columns = ['EmployeeID', 'Name', 'BaseSalary', 'Bonus', 'TaxRate', 'Deductions']
+    for col in required_columns:
+        if col not in df.columns:
+            raise ValueError(f"Missing column: {col}")
+    return df
+
+# Step 3: Process Salary
+def process_salary(df):
+    df['GrossSalary'] = df['BaseSalary'] + df['Bonus']
+    df['TaxAmount'] = df['GrossSalary'] * df['TaxRate'] / 100
+    df['NetSalary'] = df['GrossSalary'] - df['TaxAmount'] - df['Deductions']
+    return df
+
+# Step 4: Store Results
+def save_salary_data(df, output_path):
+    df.to_csv(output_path, index=False)
+    print(f"Salary data saved to {output_path}")
+
+# Step 5: Generate Pay Slips (optional)
+def generate_pay_slips(df):
+    for _, row in df.iterrows():
+        slip = (
+            f"Pay Slip for {row['Name']} (ID: {row['EmployeeID']})\n"
+            f"Base Salary: ₹{row['BaseSalary']}\n"
+            f"Bonus: ₹{row['Bonus']}\n"
+            f"Gross Salary: ₹{row['GrossSalary']}\n"
+            f"Tax: ₹{row['TaxAmount']}\n"
+            f"Deductions: ₹{row['Deductions']}\n"
+            f"Net Salary: ₹{row['NetSalary']}\n"
+            "--------------------------\n"
+        )
+        print(slip)
+
+# Pipeline Execution
+def run_salary_pipeline(input_csv, output_csv):
+    df = load_employee_data(input_csv)
+    df = validate_data(df)
+    df = process_salary(df)
+    save_salary_data(df, output_csv)
+    generate_pay_slips(df)
+
+# Example Usage
+if __name__ == "__main__":
+    run_salary_pipeline('employee_data.csv', 'salary_output.csv')
 
 trigger:
 - main
